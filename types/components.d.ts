@@ -51,6 +51,7 @@ declare module 'vue' {
     'IMaterialSymbols:sortRounded': typeof import('~icons/material-symbols/sort-rounded')['default']
     'IMaterialSymbols:starRounded': typeof import('~icons/material-symbols/star-rounded')['default']
     'IMaterialSymbols:tableOutline': typeof import('~icons/material-symbols/table-outline')['default']
+    'IMaterialSymbols:trendingUpRounded': typeof import('~icons/material-symbols/trending-up-rounded')['default']
     'IMaterialSymbols:tune': typeof import('~icons/material-symbols/tune')['default']
     'IMdi:arrowBackCircle': typeof import('~icons/mdi/arrow-back-circle')['default']
     'IMdi:chartArc': typeof import('~icons/mdi/chart-arc')['default']

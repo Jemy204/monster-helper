@@ -55,6 +55,11 @@ const items = reactive([
         icon: () => h(resolveComponent("i-material-symbols:map-outline")),
     },
     {
+        label: () => h(RouterLink, { to: "/improve" }, () => "提升"),
+        key: "improve",
+        icon: () => h(resolveComponent("i-material-symbols:trending-up-rounded")),
+    },
+    {
         label: () => h(RouterLink, { to: "/planning" }, () => "规划"),
         key: "planning",
         icon: () => h(resolveComponent("i-material-symbols:route")),

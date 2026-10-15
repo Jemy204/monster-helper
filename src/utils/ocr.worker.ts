@@ -6,6 +6,19 @@ import { PaddleOcrService, type OrtModule, type PaddleOcrProgressEvent, type Rec
 
 let paddleOcrService: PaddleOcrService;
 
+/**
+ * det 预处理的长边上限（像素）。
+ *
+ * PaddleOCR 默认 `maxSideLimit: 4000`，配合 `limitType: "min"` 会把竖长截图
+ * 放大到 4000px 长边（339x1157 的技能面板 → 1184x4000，像素量放大 14倍），
+ * det 推理耗时飙到 4.4s。实测把长边限制到 1536 后 det 平均降到 1.3s（3.3x），
+ * 识别出的文本与原配置一致率 91~98%，且差异多为"错字变对字"（如 命线→致命线）。
+ *
+ * 保持 1536 而不是更激进的值，是因为再往下会让小字号文本（技能等级数字）
+ * 因插值损失而漏框。若识别漏技能，可临时调回 4000。
+ */
+const DET_MAX_SIDE_LIMIT = 1536;
+
 const normalizeRecognitionResult = (item: RecognitionResult): OcrResultItem => ({
     text: item.text,
     confidence: item.confidence,
@@ -140,9 +153,10 @@ onmessage = async (event) => {
             const ocrResult = await paddleOcrService.recognize(
                 input,
                 {
-                    detection: {
-                        minimumAreaThreshold: 40,
-                    },
+detection: {
+                    minimumAreaThreshold: 40,
+                    maxSideLimit: DET_MAX_SIDE_LIMIT,
+                },
                     charWhiteList: options?.charWhiteList,
                     onProgress: (progressEvent) => {
                         postProgress(id, type, toProgressSnapshot(progressEvent));

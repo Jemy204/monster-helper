@@ -7,7 +7,16 @@
                     <main class="c-layout" :style="appThemeStyle">
                         <SideBar />
                         <div class="c-container">
-                            <router-view></router-view>
+                            <!--
+                                统计/首领/提升三页保留组件实例，切走再回来时筛选、排序、
+                                已选角色等状态不丢。用 route.meta.keepAlive 作为 key，
+                                否则不同路由会复用同一个缓存实例导致页面错乱。
+                            -->
+                            <router-view v-slot="{ Component, route }">
+                                <keep-alive :include="cachedViews">
+                                    <component :is="Component" :key="route.meta.keepAlive ? route.name : undefined" />
+                                </keep-alive>
+                            </router-view>
                         </div>
                     </main>
                 </n-dialog-provider>
@@ -27,6 +36,12 @@ const appThemeStyle = computed<CSSProperties>(() => ({
     "--m-scrollbar-color": currentTheme.value.common.scrollbarColor,
     "--m-scrollbar-color-hover": currentTheme.value.common.scrollbarColorHover,
 } as CSSProperties));
+
+/**
+ * 需要保留状态的页面（组件名需与 .vue 文件名一致，keep-alive 按名字匹配）。
+ * 这几页都有筛选/选中状态，重新进入时若组件被重建就会丢失。
+ */
+const cachedViews = ["Stat", "StatBoss", "Improve"];
 
 onMounted(() => {
     const gameStore = useGameStore();

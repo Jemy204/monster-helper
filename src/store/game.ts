@@ -57,6 +57,7 @@ export const useGameStore = defineStore("game", {
         lastFetchMonsterBossesAt: 0, // 上次加载地图boss字典的时间戳
         monsterBosses: [] as MonsterBoss[],
         monsterBossMap: {} as Record<number, MonsterBoss>,
+        skillIdAliasMap: {} as Record<number, MonsterSkill>,
         lastFetchMonsterEffectsAt: 0, // 上次加载地图效果字典的时间戳
         monsterEffects: [] as MonsterEffect[],
         monsterEffectMap: {} as Record<number, MonsterEffect>,
@@ -178,6 +179,13 @@ export const useGameStore = defineStore("game", {
             await getMonsterSkills().then((res) => {
                 this.skills = res;
                 this.skillMap = keyBy(res, "id");
+                // 部分首领的 szSkill 用 dwInSkillID 而非 dwOutSkillID 引用技能，
+                // 两种ID 都建一份索引，避免按首领取技能时整批解析失败。
+                const aliasMap: Record<number, MonsterSkill> = {};
+                for (const skill of res) {
+                    if (skill.inSkillId !== undefined) aliasMap[skill.inSkillId] = skill;
+                }
+                this.skillIdAliasMap = aliasMap;
             });
             await getMonsterBooks().then((res) => {
                 this.books = Object.values(res);
@@ -194,6 +202,14 @@ export const useGameStore = defineStore("game", {
         },
         getSkillById(id: number) {
             return this.skillMap[id] || null;
+        },
+        /**
+         * 按首领 szSkill 里给出的ID 查技能。
+         * 上游数据两种ID 混用：多数首领用 dwOutSkillID，少量（如司徒一一、阿依努尔、
+         * 武雪散、程沐华·青年）用 dwInSkillID，所以两个索引都要查。
+         */
+        getSkillByDropId(id: number) {
+            return this.skillMap[id] || this.skillIdAliasMap[id] || null;
         },
         getSkillNameCharWhiteList() {
             const levelString = skillLevelLabel.slice(1).join("");

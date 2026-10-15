@@ -834,11 +834,18 @@ const tableWidth = computed(() => {
 const roleDetail = ref<InstanceType<typeof RoleDetailDialog> | null>(null);
 const tableWrapperRef = ref<HTMLElement | null>(null);
 const maxHeight = ref(0);
+/** 重新按容器实际高度同步，供缓存恢复时调用 */
+const syncTableHeight = () => {
+    const el = tableWrapperRef.value;
+    if (el) maxHeight.value = el.getBoundingClientRect().height - 50; // 减去顶部工具栏的高度
+};
 useResizeObserver(tableWrapperRef, (entries) => {
     const entry = entries[0];
     const { height } = entry.contentRect;
     maxHeight.value = height - 50; // 减去顶部工具栏的高度
 });
+// keep-alive 恢复时容器刚插入 DOM，ResizeObserver 可能错过那次尺寸变化，主动同步一次
+onActivated(syncTableHeight);
 </script>
 
 <style lang="less">

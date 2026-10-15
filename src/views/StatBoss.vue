@@ -533,9 +533,7 @@ function updateRouteRole(roleIds: string[]) {
 
 watch(selectedRoleIds, updateRouteRole);
 
-onMounted(async () => {
-    const routeRoleId = route.params.roleId as string | undefined;
-    selectedRoleIds.value = routeRoleId ? [routeRoleId] : [];
+const loadWeeklyMap = async () => {
     isLoadingWeeklyMap.value = true;
     try {
         await gameStore.fetchWeeklyMonsterMap();
@@ -544,6 +542,18 @@ onMounted(async () => {
     } finally {
         isLoadingWeeklyMap.value = false;
     }
+};
+
+onMounted(async () => {
+    // 首次进入：从路由参数初始化选中角色
+    const routeRoleId = route.params.roleId as string | undefined;
+    selectedRoleIds.value = routeRoleId ? [routeRoleId] : [];
+    await loadWeeklyMap();
+});
+
+// 从缓存恢复时（keep-alive）不重置 selectedRoleIds，但需要确保周地图数据已就绪
+onActivated(() => {
+    loadWeeklyMap();
 });
 
 interface DutyInfo {
