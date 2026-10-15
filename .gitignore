@@ -11,7 +11,38 @@ dist
 dist-ssr
 *.local
 
-# Editor directories and files
+# ===== Rust / Tauri 构建产物 =====
+# src-tauri/.gitignore 已覆盖 /target/，这里再兜一层双保险
+src-tauri/target/
+src-tauri/gen/schemas/
+target/
+*.exe
+*.msi
+*.dmg
+*.deb
+*.app
+
+# ===== 环境变量与本地配置 =====
+# 放本地 token / API key 的文件，绝不能提交
+.env
+.env.*
+!.env.example
+*.local.env
+
+# ===== 本地临时目录（打包备份、手动备份等）=====
+.dist_prev_*/
+.backup_*/
+*.bak
+*.orig
+*.rej
+
+# ===== OCR 临时产物 =====
+# 识别结果/中间缓存，可在运行时重新生成
+*.tmp
+.cache/
+.tmp/
+
+# ===== Editor directories and files
 .vscode/*
 !.vscode/extensions.json
 .idea
@@ -21,3 +52,5 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+Thumbs.db
+desktop.ini
