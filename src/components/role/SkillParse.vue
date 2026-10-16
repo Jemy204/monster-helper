@@ -91,13 +91,17 @@ watch(
         const bitmap = await createImageBitmap(file.value);
         status.value = "processing";
         progressState.value = createOcrProgressState();
-        const { recognize } = await useOcrService();
-        const charWhiteList = useGameStore().getSkillNameCharWhiteList();
+        const gameStore = useGameStore();
+        const { recognize, setLexicon } = await useOcrService();
+        const charWhiteList = gameStore.getSkillNameCharWhiteList();
+        // 词表纠错要靠强制对齐打分，识别前先把词表推给 worker
+        setLexicon(gameStore.getSkillLexicon());
         recognize(
             "skill",
             bitmap,
             {
                 charWhiteList,
+                lexiconRescore: true,
                 debugStages: debugEnabled.value,
             },
             (_, data) => {
@@ -116,7 +120,7 @@ watch(
                 if (result) {
                     receiveOcrResult(result);
                     status.value = "success";
-                    const skillList = useGameStore().getSkillsFromOcrResult(result as OcrResultItem[]);
+                    const skillList = gameStore.getSkillsFromOcrResult(result as OcrResultItem[]);
                     parseSkills.value = skillList;
                     openPreviewIfAvailable();
                 }

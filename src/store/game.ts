@@ -216,6 +216,14 @@ export const useGameStore = defineStore("game", {
             const skillName = this.skills.map((s) => s.name).join("");
             return [...new Set((levelString + skillName).split(""))];
         },
+        /**
+         * 技能名 + 等级标签的完整词表，供 OCR 做强制对齐纠错。
+         * 与 charWhiteList 的区别：白名单是「允许哪些字」，词表是「允许哪些词」，
+         * 后者才能纠正「闪无痕 → 一闪无痕」这类漏字。
+         */
+        getSkillLexicon() {
+            return [...new Set([...this.skills.map((s) => s.name), ...skillLevelLabel.slice(1)])].filter(Boolean);
+        },
         getBooksCharWhiteList() {
             const levelString = skillLevelLabel.slice(1).join("");
             const skillName = this.skills.map((s) => s.name).join("");

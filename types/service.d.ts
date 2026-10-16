@@ -63,8 +63,17 @@ interface OcrInput {
 }
 
 interface OcrInputOptions {
-    charWhiteList?: string[];
+charWhiteList?: string[];
     debugStages?: boolean;
+    /** 是否启用词表纠错（技能识别用；仓库识别的文本不在技能词表内） */
+    lexiconRescore?: boolean;
+}
+
+interface OcrLexiconInput {
+id?: string;
+type: "lexicon";
+    /** 技能名 + 等级标签，worker 内编译成强制对齐用的 class 序列 */
+    words: string[];
 }
 
 interface OcrWorkerData {

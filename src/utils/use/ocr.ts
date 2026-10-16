@@ -19,15 +19,24 @@ const recognize = (
     handlers.set(id, handler);
 };
 
+/**
+ * 把技能词表推给 worker，用于识别后的强制对齐纠错。
+ * 词表会变（线上技能数据每 6 小时刷新），所以每次都重发而不是只在 init 发一次。
+ */
+const setLexicon = (words: string[]) => {
+    ocrWorker?.postMessage({ type: "lexicon", words } as OcrLexiconInput);
+};
+
 export const useOcrService = async (): Promise<{
     recognize: typeof recognize;
+    setLexicon: typeof setLexicon;
 }> => {
     // 正在初始化
     if (initializing) {
         await new Promise((resolve, reject) => {
             queue.push([resolve, reject]);
         });
-        return { recognize };
+        return { recognize, setLexicon };
     }
     // 第一次调用
     if (!ocrWorker && !initializing) {
@@ -48,6 +57,8 @@ export const useOcrService = async (): Promise<{
                     });
                     queue = [];
                 }
+            } else if (type == "lexicon") {
+                // 词表是 fire-and-forget，失败时 worker 会退回原始识别结果
             } else {
                 const handler = handlers.get(id)!;
                 handler(type, data);
@@ -61,5 +72,5 @@ export const useOcrService = async (): Promise<{
             queue.push([resolve, reject]);
         });
     }
-    return { recognize };
+    return { recognize, setLexicon };
 };
