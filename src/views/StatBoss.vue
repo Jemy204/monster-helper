@@ -544,15 +544,34 @@ const loadWeeklyMap = async () => {
     }
 };
 
-onMounted(async () => {
-    // 首次进入：从路由参数初始化选中角色
+/**
+ * 按路由参数同步选中角色。
+ *
+ * keep-alive 下本组件可能已存在缓存实例（onMounted 不再触发），
+ * 所以每次激活都要看一眼最新的 route.params.roleId，
+ * 否则从角色详情点图标跳进来会沿用上次的筛选结果（甚至为空）。
+ *
+ * 注意只在 **显式带了 roleId** 时才覆盖：
+ * 侧边栏「首领」入口是 `/stat/boss`（无参数），用户自己手动选的角色不该被清掉，
+ * 这正是 keep-alive 保状态的意义。
+ */
+function syncRoleFromRoute() {
     const routeRoleId = route.params.roleId as string | undefined;
-    selectedRoleIds.value = routeRoleId ? [routeRoleId] : [];
+    if (!routeRoleId) return;
+    const current = selectedRoleIds.value;
+    if (current.length === 1 && current[0] === routeRoleId) return;
+    selectedRoleIds.value = [routeRoleId];
+}
+
+onMounted(async () => {
+    // 首次进入：无角色则保持空，让用户自己选
+    syncRoleFromRoute();
     await loadWeeklyMap();
 });
 
-// 从缓存恢复时（keep-alive）不重置 selectedRoleIds，但需要确保周地图数据已就绪
+// 从缓存恢复时（keep-alive）保留原有筛选，仅在路由显式指定角色时覆盖，并确保周地图数据已就绪
 onActivated(() => {
+    syncRoleFromRoute();
     loadWeeklyMap();
 });
 

@@ -201,7 +201,10 @@ const onUpdateSkills = async () => {
 };
 const router = useRouter();
 const onGoBossStat = () => {
-    router.push({ name: "stat-boss", params: { roleId: roleId.value } });
+    // 先记住角色 id 再关闭弹窗，关闭后 roleId 会被清空
+    const targetRoleId = roleId.value;
+    onClose();
+    router.push({ name: "stat-boss", params: { roleId: targetRoleId } });
 };
 const bookParse = ref<InstanceType<typeof BookParse> | null>(null);
 const onUpdateBooks = async () => {
